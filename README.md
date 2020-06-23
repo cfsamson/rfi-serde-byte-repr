@@ -6,8 +6,6 @@ Human readable formats tend not to include a universally agreed way to represent
 data, which means those serde libraries can end up using a representation for serde's "bytes" type
 which isn't ideal for all uses.
 
-Three examples:
-
 ```rust
 // [dependencies]
 // serde = { version = "1.0", features = ["derive"] }
