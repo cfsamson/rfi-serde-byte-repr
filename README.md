@@ -6,7 +6,7 @@ which isn't ideal for all uses.
 
 Three examples:
 
-```
+```rust
 // [dependencies]
 // serde = { version = "1.0", features = ["derive"] }
 // serde_bytes = "0.11"
@@ -30,7 +30,9 @@ fn main() {
     println!("YAML: {}", serde_yaml::to_string(&s).unwrap());
     println!("TOML: {}", toml::to_string(&s).unwrap());
 }
+```
 
+```
 JSON: {"bytes":[116,101,115,116,105,110,103]}
 YAML: ---
 bytes:
@@ -64,8 +66,12 @@ fn main() {
     demo.serialize(ser).unwrap();
 
     let serialized = String::from_utf8(out).unwrap();
-    println!("TOML(base54): {}", serialized);
+    println!("JSON(base64): {}", serialized);
 }
+```
 
+Outputs:
+
+```
 JSON(base64): {"bytes":"dGVzdGluZw=="}
 ```
