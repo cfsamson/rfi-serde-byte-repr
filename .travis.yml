@@ -1,7 +1,7 @@
 language: rust
 after_success: |
-    cargo doc \
-    && echo '<meta http-equiv=refresh content=0;url=YOURLIBNAME/index.html>' > target/doc/index.html && \
+    cargo doc --target-dir docs \
+    && echo '<meta http-equiv=refresh content=0;url=serde-bytes-repr/index.html>' > docs/index.html && \
     sudo pip install ghp-import && \
-    ghp-import -n target/doc && \
+    ghp-import -n docs && \
     git push -qf https://${TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
