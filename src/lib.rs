@@ -4,6 +4,7 @@
 //! 
 //! - Base64
 //! - Hexidecimal
+//! 
 //! Human readable formats tend not to include a universally agreed way to represent arbitrary binary
 //! data, which means those serde libraries can end up using a representation for serde's "bytes" type
 //! which isn't ideal for all uses. This library gives you the option to choose a different
