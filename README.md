@@ -1,5 +1,7 @@
 # Serde adapter for controlling the representation of bytes
 
+[![Build Status](https://travis-ci.com/cfsamson/rfi-serde-byte-repr.svg?branch=master)](https://travis-ci.com/cfsamson/rfi-serde-byte-repr)
+
 Human readable formats tend not to include a universally agreed way to represent arbitrary binary
 data, which means those serde libraries can end up using a representation for serde's "bytes" type
 which isn't ideal for all uses.
