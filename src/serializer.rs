@@ -1,11 +1,11 @@
+use crate::{ByteFmtSerializer, ByteFormat};
 use serde::{
-    ser::{Error, self},
+    ser::{self, Error},
     serde_if_integer128, Serialize, Serializer,
 };
-use crate::{BytesRepr, EncodeKind};
 use std::fmt::Display;
 
-impl<S: Serializer> Serializer for BytesRepr<S> {
+impl<S: Serializer> Serializer for ByteFmtSerializer<S> {
     type Ok = S::Ok;
     type Error = S::Error;
 
@@ -156,7 +156,8 @@ impl<S: Serializer> Serializer for BytesRepr<S> {
         len: usize,
     ) -> Result<Self::SerializeTupleStruct, Self::Error> {
         let kind = self.encode_kind;
-        S::serialize_tuple_struct(self.inner, name, len).map(|ser| SerializeTupleStruct::new(ser, kind))
+        S::serialize_tuple_struct(self.inner, name, len)
+            .map(|ser| SerializeTupleStruct::new(ser, kind))
     }
 
     fn serialize_tuple_variant(
@@ -167,7 +168,8 @@ impl<S: Serializer> Serializer for BytesRepr<S> {
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
         let kind = self.encode_kind;
-        S::serialize_tuple_variant(self.inner, name, variant_index, variant, len).map(|ser| SerializeTupleVariant::new(ser, kind))
+        S::serialize_tuple_variant(self.inner, name, variant_index, variant, len)
+            .map(|ser| SerializeTupleVariant::new(ser, kind))
     }
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
@@ -184,7 +186,6 @@ impl<S: Serializer> Serializer for BytesRepr<S> {
         S::serialize_struct(self.inner, name, len).map(|ser| SerializeStruct::new(ser, encode_kind))
     }
 
-    /// ```
     fn serialize_struct_variant(
         self,
         name: &'static str,
@@ -193,7 +194,8 @@ impl<S: Serializer> Serializer for BytesRepr<S> {
         len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
         let kind = self.encode_kind;
-        S::serialize_struct_variant(self.inner, name, variant_index, variant, len).map(|ser| SerializeStructVariant::new(ser, kind))
+        S::serialize_struct_variant(self.inner, name, variant_index, variant, len)
+            .map(|ser| SerializeStructVariant::new(ser, kind))
     }
 
     fn collect_seq<I>(self, iter: I) -> Result<Self::Ok, Self::Error>
@@ -202,7 +204,9 @@ impl<S: Serializer> Serializer for BytesRepr<S> {
         <I as IntoIterator>::Item: Serialize,
     {
         let kind = self.encode_kind;
-        let iter = iter.into_iter().map(|item| BytesSerializeSized::new(item, kind.clone()));
+        let iter = iter
+            .into_iter()
+            .map(|item| BytesSerializeSized::new(item, kind.clone()));
         self.inner.collect_seq(iter)
     }
 
@@ -213,11 +217,12 @@ impl<S: Serializer> Serializer for BytesRepr<S> {
         I: IntoIterator<Item = (K, V)>,
     {
         let kind = self.encode_kind;
-        let iter = iter.into_iter()
-        .map(|(k, v)| {(
-            BytesSerializeSized::new(k, kind.clone()),
-            BytesSerializeSized::new(v, kind.clone()),
-        )});
+        let iter = iter.into_iter().map(|(k, v)| {
+            (
+                BytesSerializeSized::new(k, kind.clone()),
+                BytesSerializeSized::new(v, kind.clone()),
+            )
+        });
         self.inner.collect_map(iter)
     }
 
@@ -244,36 +249,41 @@ impl<S: Serializer> Serializer for BytesRepr<S> {
 
 pub struct BytesSerialize<'a, T: ?Sized> {
     value: &'a T,
-    kind: EncodeKind,
+    fmt: ByteFormat,
 }
 
 impl<'a, T: ?Sized> BytesSerialize<'a, T> {
-    fn new(value: &'a T, kind: EncodeKind) -> Self {
-        BytesSerialize { value, kind }
+    fn new(value: &'a T, fmt: ByteFormat) -> Self {
+        BytesSerialize { value, fmt: fmt }
     }
 }
 
-impl<'a, T: ?Sized> ser::Serialize for BytesSerialize<'a, T> 
-    where T: ser::Serialize,
+impl<'a, T: ?Sized> ser::Serialize for BytesSerialize<'a, T>
+where
+    T: ser::Serialize,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where S: Serializer {
-        ser::Serialize::serialize(self.value, BytesRepr {
-            inner: serializer,
-            encode_kind: self.kind.clone(),
-        })
+    where
+        S: Serializer,
+    {
+        ser::Serialize::serialize(
+            self.value,
+            ByteFmtSerializer {
+                inner: serializer,
+                encode_kind: self.fmt.clone(),
+            },
+        )
     }
 }
-
 
 struct BytesSerializeSized<T> {
     value: T,
-    kind: EncodeKind,
+    fmt: ByteFormat,
 }
 
 impl<T> BytesSerializeSized<T> {
-    fn new(value: T, kind: EncodeKind) -> Self {
-        BytesSerializeSized { value, kind }
+    fn new(value: T, fmt: ByteFormat) -> Self {
+        BytesSerializeSized { value, fmt: fmt }
     }
 }
 
@@ -285,21 +295,24 @@ where
     where
         S: ser::Serializer,
     {
-            ser::Serialize::serialize(&self.value, BytesRepr {
+        ser::Serialize::serialize(
+            &self.value,
+            ByteFmtSerializer {
                 inner: serializer,
-                encode_kind: self.kind.clone(),
-            })
+                encode_kind: self.fmt.clone(),
+            },
+        )
     }
 }
 
 pub struct SerializeSeq<S> {
     ser: S,
-    kind: EncodeKind,
+    fmt: ByteFormat,
 }
 
 impl<S> SerializeSeq<S> {
-    fn new(ser: S, kind: EncodeKind) -> Self {
-        SerializeSeq { ser, kind }
+    fn new(ser: S, fmt: ByteFormat) -> Self {
+        SerializeSeq { ser, fmt }
     }
 }
 
@@ -315,7 +328,7 @@ where
         T: ?Sized + ser::Serialize,
     {
         self.ser
-            .serialize_element(&BytesSerialize::new(value, self.kind.clone()))
+            .serialize_element(&BytesSerialize::new(value, self.fmt.clone()))
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
@@ -325,14 +338,14 @@ where
 
 pub struct SerializeTuple<S> {
     ser: S,
-    kind: EncodeKind,
+    fmt: ByteFormat,
 }
 
 impl<S> SerializeTuple<S> {
-    fn new(serialize_tuple: S, kind: EncodeKind) -> Self {
+    fn new(serialize_tuple: S, fmt: ByteFormat) -> Self {
         SerializeTuple {
             ser: serialize_tuple,
-            kind,
+            fmt,
         }
     }
 }
@@ -349,7 +362,7 @@ where
         T: ?Sized + ser::Serialize,
     {
         self.ser
-            .serialize_element(&BytesSerialize::new(value, self.kind.clone()))
+            .serialize_element(&BytesSerialize::new(value, self.fmt.clone()))
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
@@ -359,14 +372,14 @@ where
 
 pub struct SerializeTupleStruct<S> {
     ser: S,
-    kind: EncodeKind,
+    fmt: ByteFormat,
 }
 
 impl<S> SerializeTupleStruct<S> {
-    fn new(serialize_tuple_struct: S, kind: EncodeKind) -> Self {
+    fn new(serialize_tuple_struct: S, fmt: ByteFormat) -> Self {
         SerializeTupleStruct {
             ser: serialize_tuple_struct,
-            kind,
+            fmt,
         }
     }
 }
@@ -382,7 +395,8 @@ where
     where
         T: ?Sized + ser::Serialize,
     {
-        self.ser.serialize_field(&BytesSerialize::new(value, self.kind.clone()))
+        self.ser
+            .serialize_field(&BytesSerialize::new(value, self.fmt.clone()))
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
@@ -392,11 +406,11 @@ where
 
 pub struct SerializeTupleVariant<S> {
     ser: S,
-    kind: EncodeKind,
+    kind: ByteFormat,
 }
 
 impl<S> SerializeTupleVariant<S> {
-    fn new(serialize_tuple_variant: S, kind: EncodeKind) -> Self {
+    fn new(serialize_tuple_variant: S, kind: ByteFormat) -> Self {
         SerializeTupleVariant {
             ser: serialize_tuple_variant,
             kind,
@@ -415,7 +429,8 @@ where
     where
         T: ?Sized + ser::Serialize,
     {
-        self.ser.serialize_field(&BytesSerialize::new(value, self.kind.clone()))
+        self.ser
+            .serialize_field(&BytesSerialize::new(value, self.kind.clone()))
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
@@ -425,14 +440,14 @@ where
 
 pub struct SerializeMap<S> {
     ser: S,
-    kind: EncodeKind,
+    fmt: ByteFormat,
 }
 
 impl<S> SerializeMap<S> {
-    fn new(serialize_map: S, kind: EncodeKind) -> Self {
+    fn new(serialize_map: S, fmt: ByteFormat) -> Self {
         SerializeMap {
             ser: serialize_map,
-            kind,
+            fmt,
         }
     }
 }
@@ -448,14 +463,16 @@ where
     where
         T: ?Sized + ser::Serialize,
     {
-        self.ser.serialize_key(&BytesSerialize::new(key, self.kind.clone()))
+        self.ser
+            .serialize_key(&BytesSerialize::new(key, self.fmt.clone()))
     }
 
     fn serialize_value<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + ser::Serialize,
     {
-        self.ser.serialize_value(&BytesSerialize::new(value, self.kind.clone()))
+        self.ser
+            .serialize_value(&BytesSerialize::new(value, self.fmt.clone()))
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
@@ -468,20 +485,20 @@ where
         V: ?Sized + ser::Serialize,
     {
         self.ser.serialize_entry(
-            &BytesSerialize::new(key, self.kind.clone()),
-            &BytesSerialize::new(value, self.kind.clone()),
+            &BytesSerialize::new(key, self.fmt.clone()),
+            &BytesSerialize::new(value, self.fmt.clone()),
         )
     }
 }
 
 pub struct SerializeStruct<S> {
     ser: S,
-    encode_kind: EncodeKind,
+    fmt: ByteFormat,
 }
 
 impl<S> SerializeStruct<S> {
-    fn new(ser: S, encode_kind: EncodeKind) -> Self {
-        SerializeStruct { ser, encode_kind }
+    fn new(ser: S, fmt: ByteFormat) -> Self {
+        SerializeStruct { ser, fmt }
     }
 }
 
@@ -494,10 +511,10 @@ impl<S: ser::SerializeStruct> ser::SerializeStruct for SerializeStruct<S> {
         T: ?Sized + ser::Serialize,
     {
         self.ser
-            .serialize_field(key, &BytesSerialize::new(value, self.encode_kind.clone()))
+            .serialize_field(key, &BytesSerialize::new(value, self.fmt.clone()))
     }
 
-      fn end(self) -> Result<Self::Ok, Self::Error> {
+    fn end(self) -> Result<Self::Ok, Self::Error> {
         self.ser.end()
     }
 
@@ -508,14 +525,14 @@ impl<S: ser::SerializeStruct> ser::SerializeStruct for SerializeStruct<S> {
 
 pub struct SerializeStructVariant<S> {
     ser: S,
-    kind: EncodeKind,
+    fmt: ByteFormat,
 }
 
 impl<S> SerializeStructVariant<S> {
-    fn new(serialize_struct_variant: S, kind: EncodeKind) -> Self {
+    fn new(serialize_struct_variant: S, fmt: ByteFormat) -> Self {
         SerializeStructVariant {
             ser: serialize_struct_variant,
-            kind,
+            fmt,
         }
     }
 }
@@ -532,7 +549,7 @@ where
         T: ?Sized + ser::Serialize,
     {
         self.ser
-            .serialize_field(key, &BytesSerialize::new(value, self.kind.clone()))
+            .serialize_field(key, &BytesSerialize::new(value, self.fmt.clone()))
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {

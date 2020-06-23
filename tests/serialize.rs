@@ -1,5 +1,5 @@
-use serde_byte_repr::{BytesRepr};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+use serde_byte_repr::ByteFmtSerializer;
 
 #[test]
 fn serialize_struct_base64() {
@@ -14,7 +14,7 @@ fn serialize_struct_base64() {
     let mut out = vec![];
     let mut ser = serde_json::Serializer::new(&mut out);
     let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
-    let ser = BytesRepr::base64(&mut ser, base64_config);
+    let ser = ByteFmtSerializer::base64(&mut ser, base64_config);
     demo.serialize(ser).unwrap();
 
     let serialized = String::from_utf8(out).unwrap();
@@ -29,7 +29,7 @@ fn serialize_seq_base64() {
     let mut out = vec![];
     let mut ser = serde_json::Serializer::new(&mut out);
     let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
-    let ser = BytesRepr::base64(&mut ser, base64_config);
+    let ser = ByteFmtSerializer::base64(&mut ser, base64_config);
     demo.serialize(ser).unwrap();
 
     let serialized = String::from_utf8(out).unwrap();
@@ -48,7 +48,7 @@ fn serialize_struct_hex() {
 
     let mut out = vec![];
     let mut ser = serde_json::Serializer::new(&mut out);
-    let ser = BytesRepr::hex(&mut ser);
+    let ser = ByteFmtSerializer::hex(&mut ser);
     demo.serialize(ser).unwrap();
 
     let serialized = String::from_utf8(out).unwrap();
@@ -62,7 +62,7 @@ fn serialize_seq_hex() {
 
     let mut out = vec![];
     let mut ser = serde_json::Serializer::new(&mut out);
-    let ser = BytesRepr::hex(&mut ser);
+    let ser = ByteFmtSerializer::hex(&mut ser);
     demo.serialize(ser).unwrap();
 
     let serialized = String::from_utf8(out).unwrap();
