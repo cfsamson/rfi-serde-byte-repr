@@ -1,6 +1,6 @@
-//! # Serde adapter for (de)serialize bytes to and from specific formats
+//! # Serde adapter for (de)serializing bytes to and from specific formats
 //!
-//! Currently two byte representations is supported:
+//! Currently these representations is supported:
 //! 
 //! - Base64
 //! - Hexidecimal
@@ -8,12 +8,13 @@
 //! Human readable formats tend not to include a universally agreed way to represent arbitrary binary
 //! data, which means those serde libraries can end up using a representation for serde's "bytes" type
 //! which isn't ideal for all uses. This library gives you the option to choose a different
-//! representation.
+//! representation than the default for libraries like `serde_json`, `toml` and `serde_yaml`.
 //! 
 //! ## How to make sure that your datatype is interpreted as bytes?
+//!
 //! Without specialization, Rust forces Serde to treat &[u8] just like any other
 //! slice and Vec<u8> just like any other vector. To enable specialized handling
-//! of `&[u8]` one solution is to use the [serde_bytes](https://docs.rs/serde_bytes/0.11.5/serde_bytes/index.html) crate.
+//! of `&[u8]` can use the [serde_bytes](https://docs.rs/serde_bytes/0.11.5/serde_bytes/index.html) crate.
 //! 
 //! You'll se this in use in the examples below:
 //! 
@@ -82,7 +83,7 @@ pub struct ByteFmtSerializer<S> {
     encode_kind: ByteFormat,
 }
 impl<S> ByteFmtSerializer<S> {
-    /// Crates an adapter which (de)serializes to and from a Base64 representation.
+    /// Crates an adapter which serializes to and from a Base64 representation.
     /// Provide a configuration from the `base64` crate specifying the specifics
     /// on how you want the bytes encoded.
     pub fn base64(ser: S, cfg: base64::Config) -> Self {
@@ -92,7 +93,7 @@ impl<S> ByteFmtSerializer<S> {
         }
     }
 
-    /// Creates an adapter which (de)serializes to and from a HEX representation
+    /// Creates an adapter which serializes to and from a HEX representation
     pub fn hex(ser: S) -> Self {
         Self {
             inner: ser,
@@ -115,7 +116,9 @@ pub struct ByteFmtDeserializer<D> {
 }
 
 impl<D> ByteFmtDeserializer<D> {
-    /// Build a deserializer adapter for the specified format
+    /// Crates an adapter which deserializes to and from a Base64 representation.
+    /// Provide a configuration from the `base64` crate specifying the specifics
+    /// on how you want the bytes encoded.
     pub fn new_base64(deserializer: D, config: base64::Config) -> Self {
         ByteFmtDeserializer {
             inner: deserializer,
@@ -123,6 +126,7 @@ impl<D> ByteFmtDeserializer<D> {
         }
     }
 
+    /// Creates an adapter which deserializes to and from a HEX representation
     pub fn new_hex(deserializer: D) -> Self {
         ByteFmtDeserializer {
             inner: deserializer,
