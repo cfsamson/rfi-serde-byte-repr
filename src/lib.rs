@@ -66,7 +66,6 @@
 //! # }
 //! ```
 
-
 mod deserializer;
 mod serializer;
 
