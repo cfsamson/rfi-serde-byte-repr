@@ -52,7 +52,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde-byte-repr"
+name = "serde-bytes-repr"
 version = "0.1.0"
 dependencies = [
  "base64",

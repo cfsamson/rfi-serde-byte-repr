@@ -1,8 +1,15 @@
 [package]
-name = "serde-byte-repr"
+name = "serde-bytes-repr"
 version = "0.1.0"
 authors = ["cfsamson <cf@samson.no>"]
+description = "Serde adapter for controlling the representation of bytes"
+repository = "https://github.com/cfsamson/rfi-serde-byte-repr"
+documentation = "https://docs.rs/serde_bytes_repr"
+readme = "README.md"
+categories = ["encoding"]
+keywords = ["serde", "adapter", "bytes", "bytearray"]
 edition = "2018"
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

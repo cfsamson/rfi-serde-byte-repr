@@ -75,8 +75,8 @@ enum ByteFormat {
     Hex,
 }
 
-/// Serializer-adapter which encodes bytes to a specified format stored as a
-/// String
+/// Serializer-adapter which encodes bytes to using the specified encoding. The format is 
+/// serialized to the data formats string representation.
 pub struct ByteFmtSerializer<S> {
     inner: S,
     encode_kind: ByteFormat,
@@ -92,7 +92,7 @@ impl<S> ByteFmtSerializer<S> {
         }
     }
 
-    /// Creates an adapter which serializes to and from a HEX representation
+    /// Creates an adapter which serializes to a HEX representation.
     pub fn hex(ser: S) -> Self {
         Self {
             inner: ser,
@@ -108,16 +108,16 @@ impl<S> ByteFmtSerializer<S> {
     }
 }
 
-/// Deserializer-adapter which decodes bytes from a specified format
+/// Deserializer-adapter which decodes bytes from a specified format.
 pub struct ByteFmtDeserializer<D> {
     pub inner: D,
     fmt: ByteFormat,
 }
 
 impl<D> ByteFmtDeserializer<D> {
-    /// Crates an adapter which deserializes to and from a Base64 representation.
-    /// Provide a configuration from the `base64` crate specifying the specifics
-    /// on how you want the bytes encoded.
+    /// Crates an adapter which deserializes from a Base64 representation. Provide a
+    /// configuration from the `base64` crate specifying the specifics on how you want the bytes
+    /// encoded.
     pub fn new_base64(deserializer: D, config: base64::Config) -> Self {
         ByteFmtDeserializer {
             inner: deserializer,
@@ -125,7 +125,7 @@ impl<D> ByteFmtDeserializer<D> {
         }
     }
 
-    /// Creates an adapter which deserializes to and from a HEX representation
+    /// Creates an adapter which deserializes from a HEX representation.
     pub fn new_hex(deserializer: D) -> Self {
         ByteFmtDeserializer {
             inner: deserializer,
