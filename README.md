@@ -46,7 +46,7 @@ bytes:
 TOML: bytes = [116, 101, 115, 116, 105, 110, 103]
 ```
 
-This adapter let's you control how the bytes are represented by wrapping a serializer like this:
+This adapter lets you control how the bytes are represented by wrapping a serializer like this:
 
 ```rust
 #[derive(Serialize, Deserialize)]
