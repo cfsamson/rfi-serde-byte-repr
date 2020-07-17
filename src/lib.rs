@@ -22,7 +22,7 @@
 //! 
 //! ```rust
 //! use serde::{Deserialize, Serialize};
-//! use serde_byte_repr::ByteFmtSerializer;
+//! use serde_bytes_repr::ByteFmtSerializer;
 //! # fn main() {
 //!     #[derive(Serialize, Deserialize)]
 //!     struct Demo {
@@ -47,7 +47,7 @@
 //! 
 //! ```rust
 //! use serde::{Deserialize, Serialize};
-//! use serde_byte_repr::{ByteFmtDeserializer, ByteFmtSerializer};
+//! use serde_bytes_repr::{ByteFmtDeserializer, ByteFmtSerializer};
 //! # fn main() {
 //!     #[derive(Serialize, Deserialize)]
 //!     struct Demo {

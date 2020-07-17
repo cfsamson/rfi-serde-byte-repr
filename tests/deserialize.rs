@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use serde_byte_repr::{ByteFmtDeserializer, ByteFmtSerializer};
+use serde_bytes_repr::ByteFmtDeserializer;
 
 #[test]
 fn deserialize_struct_base64() {

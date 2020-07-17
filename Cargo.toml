@@ -1,6 +1,6 @@
 [package]
 name = "serde-bytes-repr"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["cfsamson <cf@samson.no>"]
 description = "Serde adapter for controlling the representation of bytes"
 repository = "https://github.com/cfsamson/rfi-serde-byte-repr"
