@@ -5,6 +5,7 @@ authors = ["cfsamson <cf@samson.no>"]
 description = "Serde adapter for controlling the representation of bytes"
 repository = "https://github.com/cfsamson/rfi-serde-byte-repr"
 documentation = "https://docs.rs/serde_bytes_repr"
+license = "MIT"
 readme = "README.md"
 categories = ["encoding"]
 keywords = ["serde", "adapter", "bytes", "bytearray"]
