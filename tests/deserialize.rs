@@ -58,3 +58,48 @@ fn serialize_seq_hex() {
     let deserialized = String::from_utf8(bytes.to_vec()).unwrap();
     assert_eq!("testing", deserialized.as_str());
 }
+
+#[test]
+fn deserialize_option_base64() {
+    #[derive(Serialize, Deserialize)]
+    struct Demo {
+        #[serde(with = "serde_bytes")]
+        bytes: Vec<u8>,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    struct OptionWrapper {
+        demo: Option<Demo>,
+    }
+
+    let json = br#"{"demo":{"bytes":"dGVzdGluZw=="}}"#;
+    let mut json_de = serde_json::Deserializer::from_slice(json);
+    let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
+    let bytefmt_json_de = ByteFmtDeserializer::new_base64(&mut json_de, base64_config);
+    let option_wrapper: OptionWrapper = OptionWrapper::deserialize(bytefmt_json_de).unwrap();
+
+    let deserialized = String::from_utf8(option_wrapper.demo.unwrap().bytes).unwrap();
+    assert_eq!("testing", deserialized.as_str());
+}
+
+#[test]
+fn deserialize_option_hex() {
+    #[derive(Serialize, Deserialize)]
+    struct Demo {
+        #[serde(with = "serde_bytes")]
+        bytes: Vec<u8>,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    struct OptionWrapper {
+        demo: Option<Demo>,
+    }
+
+    let json = br#"{"demo":{"bytes":"74657374696e67"}}"#;
+    let mut json_de = serde_json::Deserializer::from_slice(json);
+    let bytefmt_json_de = ByteFmtDeserializer::new_hex(&mut json_de);
+    let option_wrapper: OptionWrapper = OptionWrapper::deserialize(bytefmt_json_de).unwrap();
+
+    let deserialized = String::from_utf8(option_wrapper.demo.unwrap().bytes).unwrap();
+    assert_eq!("testing", deserialized.as_str());
+}
