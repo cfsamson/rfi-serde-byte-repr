@@ -96,7 +96,7 @@ impl<S: Serializer> Serializer for ByteFmtSerializer<S> {
     where
         T: Serialize,
     {
-        S::serialize_some(self.inner, value)
+        value.serialize(self)
     }
 
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
