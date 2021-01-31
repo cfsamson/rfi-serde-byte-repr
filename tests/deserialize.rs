@@ -103,3 +103,65 @@ fn deserialize_option_hex() {
     let deserialized = String::from_utf8(option_wrapper.demo.unwrap().bytes).unwrap();
     assert_eq!("testing", deserialized.as_str());
 }
+
+
+#[test]
+fn deserialize_invalid_struct_base64() {
+    #[derive(Serialize, Deserialize, Debug)]
+    struct Demo {
+        #[serde(with = "serde_bytes")]
+        bytes: Vec<u8>,
+    }
+
+    let json = br#"{"bytes":"12345"}"#;
+    let mut json_de = serde_json::Deserializer::from_slice(json);
+    let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
+    let bytefmt_json_de = ByteFmtDeserializer::new_base64(&mut json_de, base64_config);
+    let demo = Demo::deserialize(bytefmt_json_de);
+
+    let msg = format!("{}", demo.unwrap_err());
+    assert_eq!("invalid length 5, expected valid base64 length at line 1 column 16", msg);
+
+    let json = br#"{"bytes":"12345%"}"#;
+    let mut json_de = serde_json::Deserializer::from_slice(json);
+    let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
+    let bytefmt_json_de = ByteFmtDeserializer::new_base64(&mut json_de, base64_config);
+    let demo = Demo::deserialize(bytefmt_json_de);
+
+    let msg = format!("{}", demo.unwrap_err());
+    assert_eq!("invalid value: character `%`, expected valid base64 character at index 5 at line 1 column 17", msg);
+
+    let json = br#"{"bytes":"123456"}"#;
+    let mut json_de = serde_json::Deserializer::from_slice(json);
+    let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
+    let bytefmt_json_de = ByteFmtDeserializer::new_base64(&mut json_de, base64_config);
+    let demo = Demo::deserialize(bytefmt_json_de);
+
+    let msg = format!("{}", demo.unwrap_err());
+    assert_eq!("invalid value: character `6`, expected valid character ending base64 string at line 1 column 17", msg);
+}
+
+#[test]
+fn deserialize_invalid_struct_hex() {
+    #[derive(Serialize, Deserialize, Debug)]
+    struct Demo {
+        #[serde(with = "serde_bytes")]
+        bytes: Vec<u8>,
+    }
+
+    let json = br#"{"bytes":"74657374696e6"}"#;
+    let mut json_de = serde_json::Deserializer::from_slice(json);
+    let bytefmt_json_de = ByteFmtDeserializer::new_hex(&mut json_de);
+    let demo = Demo::deserialize(bytefmt_json_de);
+
+    let msg = format!("{}", demo.unwrap_err());
+    assert_eq!("invalid length 13, expected even length at line 1 column 24", msg);
+
+    let json = br#"{"bytes":"746g7374696e67"}"#;
+    let mut json_de = serde_json::Deserializer::from_slice(json);
+    let bytefmt_json_de = ByteFmtDeserializer::new_hex(&mut json_de);
+    let demo = Demo::deserialize(bytefmt_json_de);
+
+    let msg = format!("{}", demo.unwrap_err());
+    assert_eq!("invalid value: character `g`, expected valid hex character at index 3 at line 1 column 25", msg);
+}
