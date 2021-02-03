@@ -2,6 +2,43 @@ use serde::{Deserialize, Serialize};
 use serde_bytes_repr::ByteFmtSerializer;
 
 #[test]
+fn serialize_newtype_base64() {
+    #[derive(Serialize, Deserialize)]
+    struct Demo(#[serde(with = "serde_bytes")] Vec<u8>);
+    let bytes = b"testing".to_vec();
+    let demo = Demo(bytes);
+
+    let mut out = vec![];
+    let mut ser = serde_json::Serializer::new(&mut out);
+    let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
+    let ser = ByteFmtSerializer::base64(&mut ser, base64_config);
+    demo.serialize(ser).unwrap();
+
+    let serialized = String::from_utf8(out).unwrap();
+    assert_eq!(r#""dGVzdGluZw==""#, serialized.as_str());
+}
+
+#[test]
+fn serialize_newtype_variant_base64() {
+    #[derive(Serialize, Deserialize)]
+    enum Demo {
+        #[serde(with = "serde_bytes")]
+        N(Vec<u8>),
+    };
+    let bytes = b"testing".to_vec();
+    let demo = Demo::N(bytes);
+
+    let mut out = vec![];
+    let mut ser = serde_json::Serializer::new(&mut out);
+    let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
+    let ser = ByteFmtSerializer::base64(&mut ser, base64_config);
+    demo.serialize(ser).unwrap();
+
+    let serialized = String::from_utf8(out).unwrap();
+    assert_eq!(r#"{"N":"dGVzdGluZw=="}"#, serialized.as_str());
+}
+
+#[test]
 fn serialize_struct_base64() {
     #[derive(Serialize, Deserialize)]
     struct Demo {
@@ -19,6 +56,27 @@ fn serialize_struct_base64() {
 
     let serialized = String::from_utf8(out).unwrap();
     assert_eq!(r#"{"bytes":"dGVzdGluZw=="}"#, serialized.as_str());
+}
+
+#[test]
+fn serialize_struct_variant_base64() {
+    #[derive(Serialize, Deserialize)]
+    enum Demo {
+        A(Vec<u8>),
+        #[serde(with = "serde_bytes")]
+        B(Vec<u8>),
+    }
+    let bytes = b"testing".to_vec();
+    let demo = Demo::B(bytes);
+
+    let mut out = vec![];
+    let mut ser = serde_json::Serializer::new(&mut out);
+    let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
+    let ser = ByteFmtSerializer::base64(&mut ser, base64_config);
+    demo.serialize(ser).unwrap();
+
+    let serialized = String::from_utf8(out).unwrap();
+    assert_eq!(r#"{"B":"dGVzdGluZw=="}"#, serialized.as_str());
 }
 
 #[test]

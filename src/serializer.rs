@@ -124,7 +124,11 @@ impl<S: Serializer> Serializer for ByteFmtSerializer<S> {
     where
         T: Serialize,
     {
-        S::serialize_newtype_struct(self.inner, name, value)
+        S::serialize_newtype_struct(
+            self.inner,
+            name,
+            &BytesSerialize::new(value, self.encode_kind.clone()),
+        )
     }
 
     fn serialize_newtype_variant<T: ?Sized>(
@@ -137,7 +141,13 @@ impl<S: Serializer> Serializer for ByteFmtSerializer<S> {
     where
         T: Serialize,
     {
-        S::serialize_newtype_variant(self.inner, name, variant_index, variant, value)
+        S::serialize_newtype_variant(
+            self.inner,
+            name,
+            variant_index,
+            variant,
+            &BytesSerialize::new(value, self.encode_kind.clone()),
+        )
     }
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
