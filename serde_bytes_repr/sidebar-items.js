@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["ByteFmtDeserializer","Deserializer-adapter which decodes bytes from a specified format."],["ByteFmtSerializer","Serializer-adapter which encodes bytes to using the specified encoding. The format is serialized to the data formats string representation."]]});
