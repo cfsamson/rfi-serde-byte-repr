@@ -264,7 +264,7 @@ pub struct BytesSerialize<'a, T: ?Sized> {
 
 impl<'a, T: ?Sized> BytesSerialize<'a, T> {
     fn new(value: &'a T, fmt: ByteFormat) -> Self {
-        BytesSerialize { value, fmt: fmt }
+        BytesSerialize { value, fmt }
     }
 }
 
@@ -293,7 +293,7 @@ struct BytesSerializeSized<T> {
 
 impl<T> BytesSerializeSized<T> {
     fn new(value: T, fmt: ByteFormat) -> Self {
-        BytesSerializeSized { value, fmt: fmt }
+        BytesSerializeSized { value, fmt }
     }
 }
 

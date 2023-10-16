@@ -34,8 +34,8 @@
 //!
 //!     let mut out = vec![];
 //!     let mut ser = serde_json::Serializer::new(&mut out);
-//!     let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
-//!     let ser = ByteFmtSerializer::base64(&mut ser, base64_config);
+//!     let base64_config = base64::engine::GeneralPurposeConfig::new();
+//!     let ser = ByteFmtSerializer::base64(&mut ser,  base64::alphabet::URL_SAFE, base64_config);
 //!     demo.serialize(ser).unwrap();
 //!
 //!     let serialized = String::from_utf8(out).unwrap();
@@ -57,8 +57,8 @@
 //!
 //!     let json = br#"{"bytes":"dGVzdGluZw=="}"#;
 //!     let mut json_de = serde_json::Deserializer::from_slice(json);
-//!     let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
-//!     let bytefmt_json_de = ByteFmtDeserializer::new_base64(&mut json_de, base64_config);
+//!     let base64_config = base64::engine::GeneralPurposeConfig::new();
+//!     let bytefmt_json_de = ByteFmtDeserializer::new_base64(&mut json_de, base64::alphabet::URL_SAFE, base64_config);
 //!     let demo: Demo = Demo::deserialize(bytefmt_json_de).unwrap();
 //!
 //!     let deserialized = String::from_utf8(demo.bytes).unwrap();
@@ -66,12 +66,14 @@
 //! # }
 //! ```
 
+use base64::{alphabet::Alphabet, engine::GeneralPurposeConfig, Engine};
+
 mod deserializer;
 mod serializer;
 
 #[derive(Clone)]
 enum ByteFormat {
-    Base64(base64::Config),
+    Base64(Alphabet, GeneralPurposeConfig),
     Hex,
 }
 
@@ -85,10 +87,10 @@ impl<S> ByteFmtSerializer<S> {
     /// Crates an adapter which serializes to and from a Base64 representation.
     /// Provide a configuration from the `base64` crate specifying the specifics
     /// on how you want the bytes encoded.
-    pub fn base64(ser: S, cfg: base64::Config) -> Self {
+    pub fn base64(ser: S, alphabet: Alphabet, config: GeneralPurposeConfig) -> Self {
         Self {
             inner: ser,
-            encode_kind: ByteFormat::Base64(cfg),
+            encode_kind: ByteFormat::Base64(alphabet, config),
         }
     }
 
@@ -102,8 +104,10 @@ impl<S> ByteFmtSerializer<S> {
 
     fn encode(&self, v: &[u8]) -> String {
         match self.encode_kind {
-            ByteFormat::Base64(cfg) => base64::encode_config(&v, cfg),
-            ByteFormat::Hex => hex::encode(&v),
+            ByteFormat::Base64(ref alphabet, config) => {
+                base64::engine::GeneralPurpose::new(alphabet, config).encode(v)
+            }
+            ByteFormat::Hex => hex::encode(v),
         }
     }
 }
@@ -118,10 +122,11 @@ impl<D> ByteFmtDeserializer<D> {
     /// Crates an adapter which deserializes from a Base64 representation. Provide a
     /// configuration from the `base64` crate specifying the specifics on how you want the bytes
     /// encoded.
-    pub fn new_base64(deserializer: D, config: base64::Config) -> Self {
+    ///
+    pub fn new_base64(deserializer: D, alphabet: Alphabet, config: GeneralPurposeConfig) -> Self {
         ByteFmtDeserializer {
             inner: deserializer,
-            fmt: ByteFormat::Base64(config),
+            fmt: ByteFormat::Base64(alphabet, config),
         }
     }
 
