@@ -1,6 +1,6 @@
 # Serde adapter for controlling the representation of bytes
 
-[![Build Status](https://travis-ci.com/cfsamson/rfi-serde-byte-repr.svg?branch=master)](https://travis-ci.com/cfsamson/rfi-serde-byte-repr)
+[![Rust](https://github.com/cfsamson/rfi-serde-byte-repr/actions/workflows/rust.yml/badge.svg?event=branch_protection_rule)](https://github.com/cfsamson/rfi-serde-byte-repr/actions/workflows/rust.yml)
 
 Human readable formats tend not to include a universally agreed way to represent arbitrary binary
 data, which means those serde libraries can end up using a representation for serde's "bytes" type
