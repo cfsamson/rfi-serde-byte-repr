@@ -61,8 +61,8 @@ fn main() {
 
     let mut out = vec![];
     let mut ser = serde_json::Serializer::new(&mut out);
-    let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
-    let ser = BytesRepr::base64(&mut ser, base64_config);
+    let base64_config = base64::engine::GeneralPurposeConfig::new();
+    let ser = ByteFmtSerializer::base64(&mut ser, base64::alphabet::URL_SAFE, base64_config);
     demo.serialize(ser).unwrap();
 
     let serialized = String::from_utf8(out).unwrap();
