@@ -1,4 +1,5 @@
 use crate::{ByteFmtDeserializer, ByteFormat};
+use base64::Engine;
 use serde::de;
 use std::fmt;
 
@@ -278,34 +279,43 @@ impl<V> Visitor<V> {
         }
     }
 
-    fn decode<E>(&self, v: &[u8]) -> Result<Vec<u8>, E> where E: de::Error {
+    fn decode<E>(&self, v: &[u8]) -> Result<Vec<u8>, E>
+    where
+        E: de::Error,
+    {
         match self.fmt {
-            ByteFormat::Base64(cfg) => match base64::decode_config(v, cfg) {
-                Ok(bytes) => Ok(bytes),
-                Err(base64::DecodeError::InvalidByte(index, b)) 
-                => Err(E::invalid_value(
-                    de::Unexpected::Char(b.into()),
-                    &format!("valid base64 character at index {}", index).as_str()
-                )),
-                Err(base64::DecodeError::InvalidLength) 
-                => Err(E::invalid_length(v.len(), &"valid base64 length")),
-                Err(base64::DecodeError::InvalidLastSymbol(_,b)) 
-                => Err(E::invalid_value(
-                    de::Unexpected::Char(b.into()),
-                    &"valid character ending base64 string"
-                )),
-            },
+            ByteFormat::Base64(ref alphabet, config) => {
+                match base64::engine::GeneralPurpose::new(alphabet, config).decode(v) {
+                    Ok(bytes) => Ok(bytes),
+                    Err(base64::DecodeError::InvalidByte(index, b)) => Err(E::invalid_value(
+                        de::Unexpected::Char(b.into()),
+                        &format!("valid base64 character at index {}", index).as_str(),
+                    )),
+                    Err(base64::DecodeError::InvalidLength) => {
+                        Err(E::invalid_length(v.len(), &"valid base64 length"))
+                    }
+                    Err(base64::DecodeError::InvalidLastSymbol(_, b)) => Err(E::invalid_value(
+                        de::Unexpected::Char(b.into()),
+                        &"valid character ending base64 string",
+                    )),
+                    Err(base64::DecodeError::InvalidPadding) => Err(E::invalid_value(
+                        de::Unexpected::Other("invalid padding"),
+                        &"valid padding",
+                    )),
+                }
+            }
             ByteFormat::Hex => match hex::decode(v) {
                 Ok(bytes) => Ok(bytes),
-                Err(hex::FromHexError::OddLength) 
-                => Err(E::invalid_length(v.len(), &"even length")),
-                Err(hex::FromHexError::InvalidHexCharacter{c, index})
-                => Err(E::invalid_value(
+                Err(hex::FromHexError::OddLength) => {
+                    Err(E::invalid_length(v.len(), &"even length"))
+                }
+                Err(hex::FromHexError::InvalidHexCharacter { c, index }) => Err(E::invalid_value(
                     de::Unexpected::Char(c),
-                    &format!("valid hex character at index {}", index).as_str()
+                    &format!("valid hex character at index {}", index).as_str(),
                 )),
-                Err(hex::FromHexError::InvalidStringLength)
-                => Err(E::custom("Imposible to reach due to unrestricted return length")),
+                Err(hex::FromHexError::InvalidStringLength) => Err(E::custom(
+                    "Imposible to reach due to unrestricted return length",
+                )),
             },
         }
     }

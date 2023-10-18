@@ -10,8 +10,8 @@ fn serialize_newtype_base64() {
 
     let mut out = vec![];
     let mut ser = serde_json::Serializer::new(&mut out);
-    let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
-    let ser = ByteFmtSerializer::base64(&mut ser, base64_config);
+    let base64_config = base64::engine::GeneralPurposeConfig::new();
+    let ser = ByteFmtSerializer::base64(&mut ser, base64::alphabet::URL_SAFE, base64_config);
     demo.serialize(ser).unwrap();
 
     let serialized = String::from_utf8(out).unwrap();
@@ -24,14 +24,15 @@ fn serialize_newtype_variant_base64() {
     enum Demo {
         #[serde(with = "serde_bytes")]
         N(Vec<u8>),
-    };
+    }
+
     let bytes = b"testing".to_vec();
     let demo = Demo::N(bytes);
 
     let mut out = vec![];
     let mut ser = serde_json::Serializer::new(&mut out);
-    let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
-    let ser = ByteFmtSerializer::base64(&mut ser, base64_config);
+    let base64_config = base64::engine::GeneralPurposeConfig::new();
+    let ser = ByteFmtSerializer::base64(&mut ser, base64::alphabet::URL_SAFE, base64_config);
     demo.serialize(ser).unwrap();
 
     let serialized = String::from_utf8(out).unwrap();
@@ -50,8 +51,8 @@ fn serialize_struct_base64() {
 
     let mut out = vec![];
     let mut ser = serde_json::Serializer::new(&mut out);
-    let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
-    let ser = ByteFmtSerializer::base64(&mut ser, base64_config);
+    let base64_config = base64::engine::GeneralPurposeConfig::new();
+    let ser = ByteFmtSerializer::base64(&mut ser, base64::alphabet::URL_SAFE, base64_config);
     demo.serialize(ser).unwrap();
 
     let serialized = String::from_utf8(out).unwrap();
@@ -71,8 +72,8 @@ fn serialize_struct_variant_base64() {
 
     let mut out = vec![];
     let mut ser = serde_json::Serializer::new(&mut out);
-    let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
-    let ser = ByteFmtSerializer::base64(&mut ser, base64_config);
+    let base64_config = base64::engine::GeneralPurposeConfig::new();
+    let ser = ByteFmtSerializer::base64(&mut ser, base64::alphabet::URL_SAFE, base64_config);
     demo.serialize(ser).unwrap();
 
     let serialized = String::from_utf8(out).unwrap();
@@ -86,8 +87,8 @@ fn serialize_seq_base64() {
 
     let mut out = vec![];
     let mut ser = serde_json::Serializer::new(&mut out);
-    let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
-    let ser = ByteFmtSerializer::base64(&mut ser, base64_config);
+    let base64_config = base64::engine::GeneralPurposeConfig::new();
+    let ser = ByteFmtSerializer::base64(&mut ser, base64::alphabet::URL_SAFE, base64_config);
     demo.serialize(ser).unwrap();
 
     let serialized = String::from_utf8(out).unwrap();
@@ -139,8 +140,8 @@ fn serialize_option_base64() {
 
     let mut out = vec![];
     let mut ser = serde_json::Serializer::new(&mut out);
-    let base64_config = base64::Config::new(base64::CharacterSet::UrlSafe, true);
-    let ser = ByteFmtSerializer::base64(&mut ser, base64_config);
+    let base64_config = base64::engine::GeneralPurposeConfig::new();
+    let ser = ByteFmtSerializer::base64(&mut ser, base64::alphabet::URL_SAFE, base64_config);
     demo.serialize(ser).unwrap();
 
     let serialized = String::from_utf8(out).unwrap();
