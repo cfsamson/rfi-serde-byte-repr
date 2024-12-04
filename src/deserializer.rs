@@ -291,7 +291,7 @@ impl<V> Visitor<V> {
                         de::Unexpected::Char(b.into()),
                         &format!("valid base64 character at index {}", index).as_str(),
                     )),
-                    Err(base64::DecodeError::InvalidLength) => {
+                    Err(base64::DecodeError::InvalidLength(_)) => {
                         Err(E::invalid_length(v.len(), &"valid base64 length"))
                     }
                     Err(base64::DecodeError::InvalidLastSymbol(_, b)) => Err(E::invalid_value(
